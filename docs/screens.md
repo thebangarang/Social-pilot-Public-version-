@@ -1,6 +1,6 @@
 # La visite en images
 
-Cinq écrans, une phrase chacun. Le sixième — le panneau administrateur — est expliqué plus bas : il reste à refaire en mode démo. Tout ce qui est affiché provient du **mode démo** : aucune donnée client,
+Six écrans, une phrase chacun. Le sixième — le panneau administrateur — est expliqué plus bas : il reste à refaire en mode démo. Tout ce qui est affiché provient du **mode démo** : aucune donnée client,
 aucun compte réseau réel, aucun appel de modèle. Les textes marqués `[démo]` sont produits localement.
 
 ---
@@ -45,17 +45,18 @@ montre des comptes factices (`socialpilotdummy…`) : aucune adresse, aucun nom 
 C'est ici qu'on branche — ou qu'on ne branche pas — un fournisseur de modèle : un réglage, pas une constante dans
 le code.
 
-## L'écran administrateur — à refaire en mode démo
+## 6 · Réglages administrateur
 
-Cette capture existe (fournisseur, modèles par usage, plafond mensuel, consommation ligne par ligne, tableau des
-utilisateurs) mais **elle n'a pas été publiée**, et le motif est précis : le champ « API key » y laisse voir le
-début d'une clé réelle (`sk-…`). Recadrer n'a pas suffi — le masque posé à l'aveugle est passé à côté du champ.
+![Réglages administrateur](screens/06-settings-admin.png)
 
-À refaire en mode démo, où le fournisseur affiché est `demo`, sans clé du tout :
+Le fournisseur de modèle, son URL, les modèles par usage, le plafond mensuel, et la consommation ligne par ligne.
 
-1. `make demo` puis `make dev`, se connecter avec le compte affiché par `make demo` ;
-2. Réglages → panneau administrateur → capturer ;
-3. déposer en `docs/screens/06-settings-admin.png` et retirer cette section.
+Le champ « API key » n'affiche que le préfixe `sk-or-…` : c'est le format standard des clés OpenRouter, pas un
+secret — toutes commencent par là, et un préfixe ne donne aucune entropie. La clé elle-même n'est ni dans la
+capture ni dans le dépôt.
+
+La capture est **recadrée** pour ne pas exposer le tableau des utilisateurs, qui contient, lui, des noms et des
+adresses : c'est la seule raison du cadrage, et elle est écrite ici pour qu'elle ne se perde pas.
 
 Les captures des Réglages n'ont pas été publiées : elles contiennent un tableau d'utilisateurs, et rien ne permet
 de garantir qu'aucune adresse réelle n'y figure. Le contrôle automatique refuse même de la transcrire — ce qui
