@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Social Pilot</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">Social <span>Pilot</span></div>
+      <nav class="nav" id="nav">
+        <div class="nav-item active" data-tab="generation"><span class="dot"></span><span data-i18n="nav.generation">Generation</span></div>
+        <div class="nav-item" data-tab="performance"><span class="dot"></span><span data-i18n="nav.performance">Performance</span></div>
+        <div class="nav-item" data-tab="community"><span class="dot"></span><span data-i18n="nav.community">Community manager</span></div>
+        <div class="nav-item" data-tab="calendar"><span class="dot"></span><span data-i18n="cal.title">Calendar</span></div>
+        <div class="nav-item" data-tab="settings"><span class="dot"></span><span data-i18n="nav.settings">Settings</span></div>
+      </nav>
+      <div class="muted" style="font-size:11px;margin:14px 0 4px" data-i18n="gen.brand">Brand</div>
+      <div class="brand-select-wrap">
+        <button type="button" class="brand-select-btn" id="brand-select-btn" aria-haspopup="listbox" aria-expanded="false">
+          <img id="brand-select-logo" class="brand-logo-thumb" alt="" hidden>
+          <span id="brand-select-name" style="flex:1;text-align:left">—</span>
+          <span class="brand-select-caret">▾</span>
+        </button>
+        <div class="brand-select-menu" id="brand-select-menu" hidden></div>
+      </div>
+      <div class="sidebar-foot">
+        <div class="lang-switch" role="group" aria-label="Language">
+          <button type="button" class="seg-btn" data-lang="fr">FR</button>
+          <button type="button" class="seg-btn" data-lang="en">EN</button>
+        </div>
+        <div class="sidebar-user" id="user-name">—</div>
+        <div class="sidebar-role" id="user-role"></div>
+        <button class="btn-ghost logout" id="logout-btn" data-i18n="nav.logout">Log out</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="tab-panel active" id="tab-generation">
+        <div class="gen-layout">
+          <aside class="gen-sessions" id="gen-sessions">
+            <div class="gen-sessions-head">
+              <button class="btn-sm" id="new-session-btn" style="flex:1" data-i18n="gen.new_session">+ Session</button>
+              <button class="btn-sm" id="sessions-toggle" title="Collapse session list" data-i18n-title="gen.collapse">«</button>
+            </div>
+            <div id="session-list"></div>
+          </aside>
+
+          <div class="gen-chat">
+            <div id="chat-messages" class="chat-scroll"></div>
+            <div id="selected-media" class="thumb-row"></div>
+            <div id="post-pipeline"></div>
+            <div class="chat-input-row">
+              <div class="prompt-grid">
+                <div class="prompt-col">
+                  <label class="prompt-label" for="chat-input" data-i18n="gen.prompt_text_title">Text</label>
+                  <textarea id="chat-input" rows="6" placeholder="Describe the post you want (as to your team)…  —  Ctrl+Enter to send" data-i18n-placeholder="gen.input_placeholder"></textarea>
+                </div>
+                <div class="prompt-col" id="media-brief-col">
+                  <label class="prompt-label" for="media-brief" data-i18n="gen.prompt_media_title">Media</label>
+                  <textarea id="media-brief" rows="6" placeholder="Describe the media you want (subject, scene, style, mood, colors…)" data-i18n-placeholder="gen.media_brief_placeholder"></textarea>
+                </div>
+              </div>
+              <button class="btn-primary" id="send-btn" type="button" data-i18n="common.send">Send</button>
+            </div>
+          </div>
+
+          <aside class="gen-panel">
+            <div class="card">
+              <div class="card-title" data-i18n="gen.options">Options</div>
+              <div id="gen-brand-warning" hidden style="color:var(--sp-warning);font-size:12px;margin:4px 0 8px"></div>
+              <label class="field-label" data-i18n="gen.networks">Networks</label>
+              <div class="net-picker" id="gen-net-picker"></div>
+              <label class="field-label" for="media-type" data-i18n="gen.media_type">Media type</label>
+              <select id="media-type">
+                <option value="" data-i18n="gen.media_auto">Auto (image/video)</option>
+                <option value="image" data-i18n="gen.media_image">Image</option>
+                <option value="video" data-i18n="gen.media_video">Video</option>
+                <option value="text" data-i18n="gen.media_text">Text only</option>
+              </select>
+              <div id="media-text-group">
+                <label class="field-label" for="media-text-mode" data-i18n="gen.text_on_media">Text on media</label>
+                <select id="media-text-mode">
+                  <option value="auto" data-i18n="gen.text_auto">Auto (agent decides)</option>
+                  <option value="yes" data-i18n="gen.text_yes">With text</option>
+                  <option value="no" data-i18n="gen.text_no">No text</option>
+                </select>
+                <input id="media-text-spec" placeholder="Desired text" data-i18n-placeholder="gen.text_placeholder" hidden>
+              </div>
+              <label class="field-label" for="preset-select" data-i18n="gen.art_direction">Art direction</label>
+              <select id="preset-select"></select>
+              <div id="preset-hint" class="muted" style="font-size:11px;margin-top:4px"></div>
+              <div class="divider"></div>
+              <div id="branding-consignes"></div>
+              <button class="btn-sm" id="branding-kit-btn" type="button" style="width:100%;margin-top:8px" data-i18n="gen.manage_brandkit">Manage branding kit</button>
+            </div>
+            <div class="card">
+              <div class="card-title" data-i18n="gen.media_library">Media library</div>
+              <button class="btn-sm" id="media-upload-btn" type="button" style="width:100%" data-i18n="gen.import_media">Import media</button>
+              <button class="btn-sm" id="media-browse-btn" type="button" style="width:100%;margin-top:6px" data-i18n="gen.browse_manage">Browse / manage</button>
+              <input type="file" id="media-upload-input" multiple hidden>
+              <div id="media-list" class="media-grid"></div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="tab-panel" id="tab-performance">
+        <div class="page-head">
+          <div class="page-title" data-i18n="perf.title">Performance</div>
+          <div class="page-desc" data-i18n="perf.desc">Unified metrics, aggregated and per platform.</div>
+        </div>
+        <div id="perf-kpis" class="perf-kpis"></div>
+        <div class="perf-filter" style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <div class="seg">
+            <button type="button" class="seg-btn active" data-pf="all" data-i18n="perf.all">All</button>
+            <button type="button" class="seg-btn" data-pf="tiktok">TikTok</button>
+            <button type="button" class="seg-btn" data-pf="instagram">Instagram</button>
+            <button type="button" class="seg-btn" data-pf="facebook">Facebook</button>
+            <button type="button" class="seg-btn" data-pf="linkedin">LinkedIn</button>
+            <button type="button" class="seg-btn" data-pf="x">X</button>
+            <button type="button" class="seg-btn" data-pf="threads">Threads</button>
+            <button type="button" class="seg-btn" data-pf="pinterest">Pinterest</button>
+            <button type="button" class="seg-btn" data-pf="bluesky">Bluesky</button>
+          </div>
+          <button class="btn-sm" id="perf-export-btn" type="button" data-i18n="perf.export_pdf">Export PDF</button>
+        </div>
+        <div class="card">
+          <div class="card-title" data-i18n="perf.trend">Trend</div>
+          <div style="height:280px"><canvas id="perf-chart"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title" data-i18n="perf.publications">Publications</div>
+          <table id="perf-table"></table>
+          <div class="muted" id="perf-empty" hidden data-i18n="perf.empty">No publication published yet — publish a post to see its metrics here.</div>
+        </div>
+        <div class="card">
+          <div class="card-title" data-i18n="perf.insights">Insights</div>
+          <div id="perf-insights"></div>
+        </div>
+        <div class="card">
+          <div class="card-title" data-i18n="perf.best_time">Best time to post</div>
+          <div id="perf-best-time"></div>
+        </div>
+      </section>
+
+      <section class="tab-panel" id="tab-community">
+        <div class="page-head">
+          <div class="page-title" data-i18n="cm.title">Community manager</div>
+          <div class="page-desc" data-i18n="cm.desc">Comment inbox, green / orange / red classification.</div>
+        </div>
+        <div class="inline-form" style="margin-bottom:12px;align-items:center">
+          <div class="seg" id="cm-filter">
+            <button type="button" class="seg-btn active" data-cf="all" data-i18n="cm.all">All</button>
+            <button type="button" class="seg-btn" data-cf="green" data-i18n="cm.green">Green</button>
+            <button type="button" class="seg-btn" data-cf="orange" data-i18n="cm.orange">Orange</button>
+            <button type="button" class="seg-btn" data-cf="red" data-i18n="cm.red">Red</button>
+          </div>
+          <button class="btn-sm" id="cm-poll-btn" type="button" data-i18n="cm.refresh">Refresh</button>
+        </div>
+        <div class="cm-batch-bar" id="cm-batch-bar" hidden>
+          <label><input type="checkbox" id="cm-select-all"> <span data-i18n="cm.select_all">Select all</span></label>
+          <span class="muted" id="cm-sel-count">0 selected</span>
+          <span class="spacer"></span>
+          <button class="btn-sm" id="cm-batch-generate" type="button" data-i18n="cm.generate_replies">Generate replies</button>
+          <button class="btn-accent" id="cm-batch-send" type="button" data-i18n="cm.send_selection">Send selection</button>
+        </div>
+        <div id="cm-list"></div>
+      </section>
+
+      <section class="tab-panel" id="tab-calendar">
+        <div class="page-head">
+          <div class="page-title" data-i18n="cal.title">Calendar</div>
+          <div class="page-desc" data-i18n="cal.desc">Monthly view of scheduled and published posts.</div>
+        </div>
+        <div class="card">
+          <div class="ec-nav">
+            <button class="btn-sm" id="cal-prev" type="button">‹</button>
+            <div class="ec-nav-title" id="cal-month-title">—</div>
+            <button class="btn-sm" id="cal-next" type="button">›</button>
+            <span class="spacer"></span>
+            <button class="btn-sm" id="cal-today" type="button" data-i18n="cal.today">Today</button>
+          </div>
+          <div class="ec-dow" id="cal-dow"></div>
+          <div class="ec-grid" id="cal-grid"></div>
+        </div>
+      </section>
+
+      <section class="tab-panel" id="tab-settings">
+        <div class="page-head">
+          <div class="page-title" data-i18n="settings.title">Settings</div>
+          <div class="page-desc" data-i18n="settings.desc">Connections, LLM provider, budget, users, security, theme.</div>
+        </div>
+
+        <div class="card" id="language-card">
+          <div class="card-title" data-i18n="settings.language">Language</div>
+          <div class="seg" id="lang-selector" role="group" aria-label="Language">
+            <button type="button" class="seg-btn" data-lang="fr">Français</button>
+            <button type="button" class="seg-btn" data-lang="en">English</button>
+          </div>
+        </div>
+
+        <div class="card" id="brands-card">
+          <div class="card-title" data-i18n="brands.title">Brands</div>
+          <div class="inline-form" style="margin-bottom:8px">
+            <input id="brand-name" placeholder="Brand name" data-i18n-placeholder="brands.placeholder">
+            <label class="btn-sm" style="cursor:pointer;margin:0">Logo<input type="file" id="brand-logo" accept="image/*" hidden></label>
+            <span class="muted" id="brand-logo-name" style="font-size:12px"></span>
+            <input type="file" id="brand-logo-edit" accept="image/*" hidden>
+            <button class="btn-sm" id="brand-create-btn" type="button" data-i18n="brands.create">Add</button>
+          </div>
+          <div id="brands-list"></div>
+        </div>
+
+        <div class="card" id="connect-card">
+          <div class="card-title" data-i18n="settings.networks">Social networks</div>
+          <div class="inline-form" id="connect-buttons">
+            <button class="btn-sm" type="button" data-platform="tiktok">+ TikTok</button>
+            <button class="btn-sm" type="button" data-platform="instagram">+ Instagram</button>
+            <button class="btn-sm" type="button" data-platform="facebook">+ Facebook</button>
+            <button class="btn-sm" type="button" data-platform="linkedin">+ LinkedIn</button>
+            <button class="btn-sm" type="button" data-platform="x">+ X</button>
+            <button class="btn-sm" type="button" data-platform="threads">+ Threads</button>
+            <button class="btn-sm" type="button" data-platform="pinterest">+ Pinterest</button>
+            <button class="btn-sm" type="button" data-platform="bluesky">+ Bluesky</button>
+          </div>
+          <div class="muted" id="connect-note" style="margin-top:8px" data-i18n="settings.networks_note">Simulated connection (mock) for now — real OAuth activates once apps are registered/audited. Multiple accounts per platform; mark the "default" account used for publishing.</div>
+          <div class="muted" id="connect-msg"></div>
+          <div class="spacer"></div>
+          <table id="accounts-table"></table>
+        </div>
+
+        <div class="grid-2">
+          <div class="card" id="account-card">
+            <div class="card-title" data-i18n="settings.account">My account</div>
+            <div class="inline-form" id="password-form">
+              <input type="password" id="cur-password" placeholder="Current password" data-i18n-placeholder="settings.current_password" autocomplete="current-password">
+              <input type="password" id="new-password" placeholder="New password (min 8)" data-i18n-placeholder="settings.new_password" autocomplete="new-password">
+              <button class="btn-sm" type="button" id="password-btn" data-i18n="settings.change">Change</button>
+            </div>
+            <div class="muted" id="password-msg"></div>
+            <div class="spacer"></div>
+            <div id="2fa-box"></div>
+          </div>
+
+          <div class="card" id="theme-card">
+            <div class="card-title"><span data-i18n="settings.theme">Theme</span> <span class="muted" data-i18n="settings.theme_whitelabel">(whitelabel)</span></div>
+            <div class="swatches" id="swatches"></div>
+            <div class="muted" id="theme-msg" style="margin-top:10px"></div>
+          </div>
+
+          <div class="card" id="llm-card">
+            <div class="card-title"><span data-i18n="settings.llm">LLM provider</span> <span class="muted" data-i18n="settings.llm_admin">(admin)</span></div>
+            <label for="llm-provider" data-i18n="settings.llm_provider">Provider</label>
+            <select id="llm-provider">
+              <option value="openrouter" data-i18n="settings.llm_openrouter">OpenRouter (one key = text + image + video)</option>
+              <option value="openai_compatible" data-i18n="settings.llm_private">Private cloud (OpenAI-compatible)</option>
+              <option value="ollama" data-i18n="settings.llm_ollama">Ollama (local, IP + port)</option>
+              <option value="none" data-i18n="settings.llm_none">None</option>
+            </select>
+            <div id="llm-fields"></div>
+            <div class="inline-form" style="margin-top:14px">
+              <button class="btn-sm" type="button" id="llm-save-btn" data-i18n="common.save">Save</button>
+              <button class="btn-sm" type="button" id="llm-test-btn" data-i18n="settings.llm_test">Test connection</button>
+            </div>
+            <div class="muted" id="llm-msg" style="margin-top:10px"></div>
+          </div>
+
+          <div class="card" id="usage-card">
+            <div class="card-title" data-i18n="settings.usage">Usage</div>
+            <div id="usage-summary"></div>
+            <div class="spacer"></div>
+            <table id="usage-table"></table>
+          </div>
+        </div>
+
+        <div class="card" id="users-card" hidden>
+          <div class="card-title"><span data-i18n="settings.users">Users</span> <span class="muted" data-i18n="settings.users_admin">(admin)</span></div>
+          <div class="inline-form" id="create-user-form">
+            <input id="nu-name" placeholder="Name" data-i18n-placeholder="settings.user_name">
+            <input id="nu-email" type="email" placeholder="Email" data-i18n-placeholder="settings.user_email">
+            <input id="nu-password" type="password" placeholder="Password (min 8)" data-i18n-placeholder="settings.user_password_placeholder">
+            <select id="nu-role">
+              <option value="operator">operator</option>
+              <option value="admin">admin</option>
+            </select>
+            <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="nu-can-publish"> <span data-i18n="settings.user_can_publish">Can publish</span></label>
+            <button class="btn-sm" type="button" id="create-user-btn" data-i18n="settings.user_create">Create</button>
+          </div>
+          <div class="muted" id="users-msg"></div>
+          <div class="spacer"></div>
+          <table id="users-table"></table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="media-modal" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <div class="card-title" style="margin:0" data-i18n="gen.media_library">Media library</div>
+        <button class="btn-sm" id="media-modal-close" type="button" data-i18n="common.close">Close</button>
+      </div>
+      <input id="media-search" placeholder="Search media…" data-i18n-placeholder="media.search" style="margin:10px 0">
+      <div id="media-modal-grid" class="media-modal-grid"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="adjust-modal" hidden>
+    <div class="modal modal-sm">
+      <div class="modal-head">
+        <div class="card-title" id="adjust-title" style="margin:0" data-i18n="gen.adjust">Adjust</div>
+        <button class="btn-sm" id="adjust-close" type="button" data-i18n="common.close">Close</button>
+      </div>
+      <textarea id="adjust-text" rows="7" placeholder="Describe what you want to change…" data-i18n-placeholder="gen.feedback_placeholder"></textarea>
+      <div class="modal-actions">
+        <button class="btn-sm" id="adjust-cancel" type="button" data-i18n="common.cancel">Cancel</button>
+        <button class="btn-primary" id="adjust-confirm" type="button" data-i18n="common.send">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="brandkit-modal" hidden>
+    <div class="modal modal-sm">
+      <div class="modal-head">
+        <div class="card-title" style="margin:0" data-i18n="brand.title">Branding kit</div>
+        <button class="btn-sm" id="brandkit-close" type="button" data-i18n="common.close">Close</button>
+      </div>
+      <select id="brand-kind" style="margin-top:10px;margin-bottom:6px">
+        <option value="logo" data-i18n="brand.logo">Logo</option>
+        <option value="color" data-i18n="brand.color">Color</option>
+        <option value="font" data-i18n="brand.font">Font</option>
+        <option value="visual" data-i18n="brand.visual">Visual</option>
+        <option value="guideline" data-i18n="brand.guideline">Guideline</option>
+        <option value="condition" data-i18n="brand.condition">Custom rule</option>
+        <option value="other" data-i18n="brand.other">Other</option>
+      </select>
+      <div class="muted" id="brand-kind-hint" style="margin-bottom:6px;font-size:11px;line-height:1.35"></div>
+      <input id="brand-filename" placeholder="Name (e.g. main logo)" data-i18n-placeholder="brand.name_placeholder" style="margin-bottom:6px">
+      <input id="brand-notes" placeholder="Notes (e.g. #5b8cff)" data-i18n-placeholder="brand.notes_placeholder" style="margin-bottom:6px">
+      <div class="muted" id="brand-file-name" style="margin-bottom:6px" data-i18n="brand.no_file">No file attached</div>
+      <div class="inline-form" style="margin-bottom:6px">
+        <button class="btn-sm" id="brand-upload-btn" type="button" data-i18n="brand.attach_file">Attach a file</button>
+        <button class="btn-primary" id="brand-add-btn" type="button" data-i18n="brand.add">Add to kit</button>
+      </div>
+      <input type="file" id="brand-file-input" hidden>
+      <div id="brand-list" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="connect-modal" hidden>
+    <div class="modal modal-sm">
+      <div class="modal-head">
+        <div class="card-title" style="margin:0" data-i18n="connect.bluesky_title">Connect Bluesky</div>
+        <button class="btn-sm" id="bsky-close" type="button" data-i18n="common.close">Close</button>
+      </div>
+      <div class="muted" style="margin-top:12px;font-size:13px;line-height:1.5" data-i18n="connect.bluesky_note">Enter your handle and App Password (Bluesky → Settings → App passwords). It is validated against Bluesky and stored encrypted.</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+        <input id="bsky-handle" placeholder="handle.bsky.social" data-i18n-placeholder="connect.handle_placeholder">
+        <input id="bsky-password" type="password" placeholder="App password" data-i18n-placeholder="connect.password_placeholder">
+      </div>
+      <div class="muted" id="bsky-msg" style="margin-top:10px"></div>
+      <div class="modal-actions">
+        <button class="btn-sm" id="bsky-cancel" type="button" data-i18n="common.cancel">Cancel</button>
+        <button class="btn-primary" id="bsky-connect-btn" type="button" data-i18n="connect.connect">Connect</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="calendar-modal" hidden>
+    <div class="modal modal-sm">
+      <div class="modal-head">
+        <div class="card-title" style="margin:0" data-i18n="pp.schedule_title">Schedule the publication</div>
+        <button class="btn-sm" id="cal-close" type="button" data-i18n="common.close">Close</button>
+      </div>
+      <div id="cal-view"></div>
+      <div class="modal-actions">
+        <button class="btn-sm" id="cal-cancel" type="button" data-i18n="common.cancel">Cancel</button>
+        <button class="btn-primary" id="cal-confirm" type="button" data-i18n="pp.schedule_btn">Schedule</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="confirm-modal" hidden>
+    <div class="modal modal-sm">
+      <div class="modal-head">
+        <div class="card-title" id="confirm-title" style="margin:0" data-i18n="common.confirm">Confirm</div>
+        <button class="btn-sm" id="confirm-close" type="button" data-i18n="common.close">Close</button>
+      </div>
+      <div id="confirm-text" style="margin-top:12px;font-size:14px;line-height:1.5"></div>
+      <div class="modal-actions">
+        <button class="btn-sm" id="confirm-cancel" type="button" data-i18n="common.cancel">Cancel</button>
+        <button class="btn-primary" id="confirm-ok" type="button" data-i18n="common.confirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="prompt-modal" hidden>
+    <div class="modal modal-sm">
+      <div class="modal-head">
+        <div class="card-title" id="prompt-title" style="margin:0" data-i18n="common.input">Enter</div>
+        <button class="btn-sm" id="prompt-close" type="button" data-i18n="common.close">Close</button>
+      </div>
+      <input id="prompt-input" type="text" style="margin-top:12px">
+      <div class="modal-actions">
+        <button class="btn-sm" id="prompt-cancel" type="button" data-i18n="common.cancel">Cancel</button>
+        <button class="btn-primary" id="prompt-ok" type="button" data-i18n="common.ok">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="brand-del-modal" hidden>
+    <div class="modal modal-sm">
+      <div class="modal-head">
+        <div class="card-title" id="brand-del-title" style="margin:0" data-i18n="brands.delete_title">Delete brand</div>
+        <button class="btn-sm" id="brand-del-close" type="button" data-i18n="common.close">Close</button>
+      </div>
+      <div id="brand-del-body" style="margin-top:12px;font-size:14px;line-height:1.5"></div>
+      <div class="muted" id="brand-del-scope" style="margin-top:10px;font-size:12px;line-height:1.5;white-space:pre-line"></div>
+      <div class="modal-actions" style="margin-top:14px">
+        <button class="btn-sm" id="brand-del-cancel" type="button" data-i18n="common.cancel">Cancel</button>
+        <button class="btn-sm" id="brand-del-soft" type="button" data-i18n="brands.unassign_btn">Unassign, keep content</button>
+        <button class="btn-danger" id="brand-del-hard" type="button" data-i18n="brands.purge_btn">Purge everything…</button>
+      </div>
+      <div id="brand-del-confirm-wrap" hidden style="margin-top:12px">
+        <div class="muted" id="brand-del-confirm-hint" style="font-size:12px;margin-bottom:6px"></div>
+        <input id="brand-del-confirm-input" type="text" style="width:100%">
+        <button class="btn-danger" id="brand-del-confirm-btn" type="button" style="width:100%;margin-top:8px" disabled data-i18n="brands.purge_confirm_btn">Permanently delete everything</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="pub-del-modal" hidden>
+    <div class="modal modal-sm">
+      <div class="modal-head">
+        <div class="card-title" style="margin:0" data-i18n="pub.delete_title">Supprimer la publication ?</div>
+        <button class="btn-sm" id="pub-del-close" type="button" data-i18n="common.close">Close</button>
+      </div>
+      <div id="pub-del-body" style="margin-top:12px;font-size:14px;line-height:1.5"></div>
+      <div class="muted" id="pub-del-hint" style="font-size:12px;margin:10px 0 6px" data-i18n="pub.delete_hint">Tapez SUPPRIMER pour confirmer :</div>
+      <input id="pub-del-input" type="text" style="width:100%" autocomplete="off">
+      <div class="modal-actions" style="margin-top:14px">
+        <button class="btn-sm" id="pub-del-cancel" type="button" data-i18n="common.cancel">Cancel</button>
+        <button class="btn-danger" id="pub-del-confirm" type="button" disabled data-i18n="common.delete">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="post-detail-modal" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <div class="card-title" id="pd-title" style="margin:0" data-i18n="pp.detail_modal">Post details</div>
+        <button class="btn-sm" id="pd-close" type="button" data-i18n="common.close">Close</button>
+      </div>
+      <div id="pd-meta" class="muted" style="margin:8px 0"></div>
+      <div id="pd-kpis" class="perf-kpis"></div>
+      <div style="height:240px"><canvas id="pd-chart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="cal-detail-modal" hidden>
+    <div class="modal modal-sm">
+      <div class="modal-head">
+        <div class="card-title" style="margin:0">Publication</div>
+        <button class="btn-sm" id="cal-detail-close" type="button" data-i18n="common.close">Close</button>
+      </div>
+      <div id="cal-detail-body" style="margin-top:12px"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="lightbox" hidden style="background:rgba(0,0,0,0.85);cursor:zoom-out">
+    <img id="lightbox-img" src="" alt="" style="max-width:92vw;max-height:92vh;border-radius:10px;object-fit:contain">
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="/static/i18n.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

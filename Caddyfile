@@ -1,0 +1,34 @@
+# Social Pilot reverse proxy — automatic TLS via Let's Encrypt.
+# {$SITE_ADDRESS} is injected by docker-compose (defaults to localhost for
+# local testing, where Caddy serves HTTP only). Use the client's real domain
+# in production for automatic HTTPS.
+
+{$SITE_ADDRESS:localhost} {
+	encode zstd gzip
+
+	header {
+		-Server
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	}
+
+	# Brute-force protection at the edge: throttle login + 2FA per client IP
+	# (in addition to the app's per-account lockout). Requires the
+	# caddy-ratelimit module (built via ./caddy/Dockerfile).
+	handle /auth/login {
+		rate_limit {
+			zone login {
+				key    {remote_host}
+				events 10
+				window 1m
+			}
+		}
+		reverse_proxy app:8100
+	}
+
+	handle {
+		reverse_proxy app:8100
+	}
+}

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in — Social Pilot</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="auth-body">
+  <div class="auth-card">
+    <div class="auth-brand">Social <span>Pilot</span></div>
+    <div class="auth-sub" data-i18n="login.subtitle">Social content production studio</div>
+
+    <form id="login-form">
+      <label for="email" data-i18n="login.email">Email</label>
+      <input id="email" type="email" autocomplete="username" required>
+      <label for="password" data-i18n="login.password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+      <button type="submit" class="btn-primary" id="login-btn" data-i18n="login.submit">Sign in</button>
+      <div class="form-error" id="error"></div>
+    </form>
+
+    <form id="2fa-form" hidden>
+      <p class="hint" data-i18n="login.2fa_hint">6-digit code from your authenticator app.</p>
+      <input id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="••••••">
+      <button type="submit" class="btn-primary" data-i18n="login.2fa_verify">Verify</button>
+      <button type="button" class="btn-ghost" id="back-btn" data-i18n="login.back">Back</button>
+      <div class="form-error" id="2fa-error"></div>
+    </form>
+
+    <div class="lang-switch auth-lang" role="group" aria-label="Language">
+      <button type="button" class="seg-btn" data-lang="fr">FR</button>
+      <button type="button" class="seg-btn" data-lang="en">EN</button>
+    </div>
+  </div>
+
+  <script src="/static/i18n.js"></script>
+  <script>
+    (function () {
+      initLang(null);
+
+      document.querySelectorAll(".auth-lang [data-lang]").forEach(function (b) {
+        b.classList.toggle("active", b.dataset.lang === currentLang);
+        b.addEventListener("click", function () {
+          setLang(b.dataset.lang);
+          document.querySelectorAll(".auth-lang [data-lang]").forEach(function (x) {
+            x.classList.toggle("active", x.dataset.lang === currentLang);
+          });
+        });
+      });
+
+      var loginForm = document.getElementById("login-form");
+      var twofaForm = document.getElementById("2fa-form");
+      var errorEl = document.getElementById("error");
+      var twofaErrorEl = document.getElementById("2fa-error");
+      var challenge = null;
+
+      function showError(el, msg) { el.textContent = msg || ""; }
+
+      loginForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        showError(errorEl, "");
+        var btn = document.getElementById("login-btn");
+        btn.disabled = true;
+        try {
+          var res = await fetch("/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: document.getElementById("email").value.trim(),
+              password: document.getElementById("password").value,
+            }),
+          });
+          var data = await res.json().catch(function () { return {}; });
+          if (!res.ok) { throw new Error(data.detail || t("login.login_failed")); }
+          if (data.requires_2fa) {
+            challenge = data.challenge;
+            loginForm.hidden = true;
+            twofaForm.hidden = false;
+            document.getElementById("code").focus();
+          } else {
+            window.location.href = "/";
+          }
+        } catch (err) {
+          showError(errorEl, err.message);
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+      twofaForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        showError(twofaErrorEl, "");
+        try {
+          var res = await fetch("/auth/login/2fa", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              challenge: challenge,
+              code: document.getElementById("code").value.trim(),
+            }),
+          });
+          var data = await res.json().catch(function () { return {}; });
+          if (!res.ok) { throw new Error(data.detail || t("login.invalid_code")); }
+          window.location.href = "/";
+        } catch (err) {
+          showError(twofaErrorEl, err.message);
+        }
+      });
+
+      document.getElementById("back-btn").addEventListener("click", function () {
+        twofaForm.hidden = true;
+        loginForm.hidden = false;
+        challenge = null;
+        showError(twofaErrorEl, "");
+      });
+    })();
+  </script>
+</body>
+</html>

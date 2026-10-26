@@ -1,0 +1,68 @@
+# Social Pilot — DEVNET instance (the staging ring on the build machine).
+#
+# Purpose: run the current code, with a real database and real endpoints, before
+# anything reaches a client instance. Same image, same code path as production —
+# a different database, different ports, and no way in from the public network.
+#
+#   make devnet-up      # build (stamped) + start
+#   make devnet-verify  # health + management smoke checks
+#   make devnet-down    # stop, keeping state
+#
+# What this file enforces, and why:
+#  - Loopback only. Host networking with an explicit 127.0.0.1 bind, because the
+#    docker bridge is not reliably reachable on this machine — the internal
+#    gateway hit the same wall and runs network_mode: host for that reason. A
+#    published port over the bridge silently accepts the TCP connection and never
+#    answers, which is worse than failing.
+#  - Its own state (data-devnet/, media-devnet/, backups-devnet/) and its own
+#    .env.devnet. No production database, no client data, ever.
+#  - Resource-capped: a runaway test must not starve the live services that share
+#    this machine.
+#  - No Caddy: TLS terminates elsewhere in production; here we speak plain HTTP on
+#    the loopback and reach it over the tailnet when we need to click through.
+
+name: socialpilot-devnet
+
+services:
+  app:
+    build:
+      context: .
+      args:
+        GIT_SHA: ${GIT_SHA:-unknown}
+        BUILD_DATE: ${BUILD_DATE:-unknown}
+        BUILD_DIRTY: ${BUILD_DIRTY:-unknown}
+    image: social-pilot:devnet
+    container_name: socialpilot-devnet
+    restart: "no"            # a devnet that dies stays dead and visible
+    # Host networking: the bind is decided by the command below, not by a published
+    # port. 127.0.0.1 keeps it off the LAN and off the tailnet — a later
+    # `tailscale serve` can front it the same way it fronts the internal gateway.
+    network_mode: host
+    command: ["uvicorn", "app.main:app", "--host", "127.0.0.1", "--port", "${DEVNET_PORT:-8200}"]
+    # Runs as the operator (uid 1000), not the image's 10001. Production chowns
+    # its .env to 10001; here that would need sudo and would lock the operator out
+    # of the devnet's own database. Same code, same mount, operator-readable state.
+    # The state dirs must exist and be owned by this uid (`release.py devnet up`
+    # creates them, mode 700, before the first build).
+    user: "${DEVNET_UID:-1000}:${DEVNET_GID:-1000}"
+    environment:
+      SP_ENV: devnet         # the ring's own name (not production: no Secure-cookie requirement
+                             # over HTTP). The Article 50(2) publish gate names the rings that may
+                             # publish unmarked generated media, and 'devnet' is one of them; an
+                             # unrecognised value is treated as production, so this has to be explicit.
+    volumes:
+      - ./.env.devnet:/app/.env:ro
+      - ./data-devnet:/app/data
+      - ./media-devnet:/app/media
+      - ./backups-devnet:/app/backups
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:${DEVNET_PORT:-8200}/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2g

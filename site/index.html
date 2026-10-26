@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Social Pilot — Whitelabel Social Media Operating Tool</title>
+<meta name="description" content="Self-hosted, whitelabel social media operating tool for brands and agencies. Centralized post production, community management and performance tracking for TikTok, Instagram and more.">
+<style>
+  :root {
+    --bg: #0f1115; --surface: #171a21; --border: #262a33;
+    --fg: #e6e8ee; --muted: #8a8f9c; --accent: #5b8cff; --accent-2: #8a5bff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--fg); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  a { color: var(--accent); text-decoration: none; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+  header { padding: 64px 0 48px; }
+  .logo { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
+  .logo span { background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .tagline { font-size: 20px; color: var(--muted); margin-top: 12px; max-width: 640px; }
+  section { padding: 40px 0; border-top: 1px solid var(--border); }
+  h2 { font-size: 20px; margin-bottom: 16px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .card h3 { font-size: 16px; margin-bottom: 8px; }
+  .card p { color: var(--muted); font-size: 14px; }
+  footer { padding: 48px 0; color: var(--muted); font-size: 14px; border-top: 1px solid var(--border); }
+  .pill { display: inline-block; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 4px 14px; font-size: 13px; color: var(--muted); margin: 0 8px 8px 0; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="logo">Social <span>Pilot</span></div>
+    <p class="tagline">A self-hosted, whitelabel social media operating tool for brands, agencies and community managers.</p>
+    <div style="margin-top: 20px;">
+      <span class="pill">TikTok</span><span class="pill">Instagram</span><span class="pill">Bluesky</span><span class="pill">+ more</span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>One place to run every social account</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Post production</h3>
+        <p>AI-assisted drafting with numbered proposals. A human reviews and approves every step — nothing posts without explicit double approval.</p>
+      </div>
+      <div class="card">
+        <h3>Community management</h3>
+        <p>Centralized inbox for comments, smart classification and one-click replies across every connected network.</p>
+      </div>
+      <div class="card">
+        <h3>Performance tracking</h3>
+        <p>Unified analytics, engagement rates, best-time insights and exportable client reports.</p>
+      </div>
+      <div class="card">
+        <h3>Editorial calendar</h3>
+        <p>Plan, schedule and preview a full content calendar, minute-level scheduling included.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Built for sovereignty</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Self-hosted</h3>
+        <p>One dedicated instance per client, on their own server. Your data never leaves your infrastructure.</p>
+      </div>
+      <div class="card">
+        <h3>Whitelabel</h3>
+        <p>Every color and identity element is driven by a theme. Deploy it under your own brand.</p>
+      </div>
+      <div class="card">
+        <h3>Official APIs only</h3>
+        <p>Integration through the official platform APIs and OAuth. No scraping, no automation against the terms of service.</p>
+      </div>
+      <div class="card">
+        <h3>Privacy-first</h3>
+        <p>Tokens encrypted at rest, EU-local data routing, GDPR-compliant. <a href="privacy.html">Read the privacy policy</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>&copy; 2026 Social Pilot. <a href="privacy.html">Privacy policy</a> &middot; <a href="terms.html">Terms of service</a> &middot; <a href="mailto:contact@aiturn.io">Contact</a></p>
+  </div>
+</footer>
+</body>
+</html>

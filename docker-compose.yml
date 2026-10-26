@@ -1,0 +1,47 @@
+# Social Pilot — single-tenant deployment (one instance per client VPS).
+#
+# The app is NOT published to the host: it is reachable only through Caddy on
+# the internal compose network (the "127.0.0.1 only" rule). Only Caddy exposes
+# 80/443. Set SITE_ADDRESS to the client's domain for automatic TLS.
+#
+#   SITE_ADDRESS=client.example.com docker compose up -d
+
+services:
+  app:
+    build: .
+    image: social-pilot:latest
+    restart: unless-stopped
+    environment:
+      SP_ENV: production       # forces Secure cookie + production behaviour
+      SP_HOST: 0.0.0.0
+    volumes:
+      - ./.env:/app/.env:ro    # secrets (0600) — never baked into the image
+      - ./data:/app/data       # SQLite DB (WAL)
+      - ./media:/app/media     # uploaded/generated media
+      - ./backups:/app/backups # auto-backup output
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8100/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  caddy:
+    build: ./caddy
+    restart: unless-stopped
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-localhost}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      app:
+        condition: service_healthy
+
+volumes:
+  caddy_data:
+  caddy_config:

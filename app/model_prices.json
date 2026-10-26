@@ -1,0 +1,82 @@
+{
+  "_what": "Pinned prices for providers that do NOT return a cost in the response. A cost returned by the provider always wins over this file.",
+  "_rule": "Never fetch prices at request time. Update this file as a dated, reviewed task; an unknown price is loud on purpose.",
+  "version": "2026-09-24",
+  "sources": {
+    "deepseek": {
+      "url": "https://api-docs.deepseek.com/quick_start/pricing",
+      "checked": "2026-09-24",
+      "notes": "Off-peak rates are half of peak. Peak hours are 01:00-04:00 and 06:00-10:00 UTC, Monday to Friday; all other hours are off-peak. Billing follows the request time."
+    },
+    "ovh": {
+      "url": "https://www.ovhcloud.com/en-gb/public-cloud/ai-endpoints/catalog/",
+      "api_base_url": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1",
+      "checked": "2026-09-24",
+      "notes": "AI Endpoints, OpenAI-compatible. VAT WARNING: the catalogue page displays prices including the VAT of the visitor's country (the English page shows UK VAT). Check the French, ex-VAT view before this map is used for a real invoice, and update the numbers here if they differ.",
+      "model_ids": "The keys below are the lowercase, hyphenated ids used by the API. Confirm with GET /v1/models on the endpoint before onboarding a client: a string that does not match stays 'unknown' and loud, which is the safe failure.",
+      "not_priced_yet": "whisper-large-v3 (0.00004083 EUR/second) and whisper-large-v3-turbo (0.00001278 EUR/second) are billed PER SECOND, not per token. The ledger has no duration column yet, so they are deliberately absent: absent means loud, a wrong unit would mean silently wrong. Add them with a duration-aware row or not at all."
+    }
+  },
+  "off_peak_rule": {
+    "peak_hours_utc": [[1, 4], [6, 10]],
+    "peak_weekdays_utc": [0, 1, 2, 3, 4],
+    "off_peak_multiplier": 0.5
+  },
+  "models": {
+    "deepseek:deepseek-flash": {
+      "currency": "USD",
+      "unit": "per_1m_tokens",
+      "input_cached": { "peak": 0.006, "off_peak": 0.003 },
+      "input_uncached": { "peak": 0.3, "off_peak": 0.15 },
+      "output": { "peak": 1.2, "off_peak": 0.6 }
+    },
+    "deepseek:deepseek-v4-pro": {
+      "currency": "USD",
+      "unit": "per_1m_tokens",
+      "input_cached": { "peak": 0.044, "off_peak": 0.022 },
+      "input_uncached": { "peak": 1.32, "off_peak": 0.66 },
+      "output": { "peak": 3.96, "off_peak": 1.98 }
+    },
+    "deepseek:deepseek-chat": {
+      "_alias_of": "deepseek:deepseek-flash",
+      "currency": "USD",
+      "unit": "per_1m_tokens",
+      "input_cached": { "peak": 0.006, "off_peak": 0.003 },
+      "input_uncached": { "peak": 0.3, "off_peak": 0.15 },
+      "output": { "peak": 1.2, "off_peak": 0.6 }
+    },
+    "openai_compatible:deepseek-flash": {
+      "_alias_of": "deepseek:deepseek-flash",
+      "_why": "DeepSeek's own API, reached as an openai_compatible endpoint — no cost in the response, so it is priced from the canonical table above. An alias, not a copy: one place to update when DeepSeek changes its prices."
+    },
+    "openai_compatible:deepseek-chat": {
+      "_alias_of": "deepseek:deepseek-flash"
+    },
+    "openai_compatible:deepseek-v4-pro": {
+      "_alias_of": "deepseek:deepseek-v4-pro"
+    },
+    "ovh:gpt-oss-20b": { "currency": "EUR", "unit": "per_1m_tokens", "input_uncached": { "peak": 0.04 }, "output": { "peak": 0.15 } },
+    "ovh:gpt-oss-120b": { "currency": "EUR", "unit": "per_1m_tokens", "input_uncached": { "peak": 0.08 }, "output": { "peak": 0.4 } },
+    "ovh:qwen3.5-9b": { "currency": "EUR", "unit": "per_1m_tokens", "input_uncached": { "peak": 0.1 }, "output": { "peak": 0.15 } },
+    "ovh:qwen3.6-27b": { "currency": "EUR", "unit": "per_1m_tokens", "input_uncached": { "peak": 0.4 }, "output": { "peak": 2.7 } },
+    "ovh:qwen3.8-27b": { "currency": "EUR", "unit": "per_1m_tokens", "input_uncached": { "peak": 0.4 }, "output": { "peak": 2.7 } },
+    "ovh:qwen3.5-397b-a17b": { "currency": "EUR", "unit": "per_1m_tokens", "input_uncached": { "peak": 0.6 }, "output": { "peak": 3.6 } },
+    "ovh:meta-llama-3_3-70b-instruct": { "currency": "EUR", "unit": "per_1m_tokens", "input_uncached": { "peak": 0.67 }, "output": { "peak": 0.67 } },
+    "ovh:qwen2.5-vl-72b-instruct": { "currency": "EUR", "unit": "per_1m_tokens", "input_uncached": { "peak": 0.91 }, "output": { "peak": 0.91 } },
+    "ovh:qwen3-embedding-8b": { "currency": "EUR", "unit": "per_1m_tokens", "input_uncached": { "peak": 0.1 }, "output": { "peak": 0.0 }, "_note": "Embedding model: input only. The zero output rate is a real rate, not a missing price." },
+    "ovh:bge-m3": { "currency": "EUR", "unit": "per_1m_tokens", "input_uncached": { "peak": 0.01 }, "output": { "peak": 0.0 }, "_note": "Embedding model: input only." },
+    "ovh:bge-multilingual-gemma2": { "currency": "EUR", "unit": "per_1m_tokens", "input_uncached": { "peak": 0.01 }, "output": { "peak": 0.0 }, "_note": "Embedding model: input only." },
+    "ollama:*": {
+      "currency": "EUR",
+      "unit": "per_1m_tokens",
+      "flat": 0.0,
+      "_note": "Local inference: no marginal token cost. Tokens are still counted — they are real capacity, and the client may be paying for the machine."
+    },
+    "local:*": {
+      "currency": "USD",
+      "unit": "per_1m_tokens",
+      "flat": 0.0,
+      "_note": "Self-hosted inference (vLLM and friends): no marginal cost in this ledger; the machine appears as an INFRASTRUCTURE line."
+    }
+  }
+}

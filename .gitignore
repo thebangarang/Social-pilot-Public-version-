@@ -1,0 +1,56 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- Secrets ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- Database (runtime data, never committed) ---
+data/
+backups/
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+
+# --- Devnet state (parallel to production — never committed) ---
+data-devnet/
+media-devnet/
+backups-devnet/
+
+# --- Runtime media / uploads / branding kits ---
+media/
+uploads/
+tmp/
+*.log
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Baseline coverage for the isolation rule (R-SEC-071) — these six are the ones it names.
+.env
+.venv/
+node_modules/
+*.db
+logs/
+tmp/

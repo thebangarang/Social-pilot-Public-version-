@@ -1,0 +1,23 @@
+# Social Pilot — direct dependencies (transitives resolved by uv).
+# Run `make freeze` after changing this file to pin the full lock.
+fastapi==0.141.1
+uvicorn==0.52.4
+sqlalchemy==2.0.52
+pydantic==2.13.5
+pydantic-settings==2.15.0
+pyotp==2.10.0
+cryptography==50.0.1
+qrcode==8.2
+pytest==9.1.1
+httpx==0.28.1
+python-dotenv==1.2.3
+watchfiles==1.2.0
+pillow==12.3.0
+python-multipart==0.0.32
+reportlab==5.0.1
+
+# --- AI Act Article 50(2): the marking stack (app/ai_marking.py) -------------------------------------------------
+# blind-watermark needs numpy, opencv-python and pywavelets only — do not swap in the fuller opencv
+# distribution. Pinned exact: the watermark key and the library's bit-packing decide whether a mark reads
+# back, so an unpinned upgrade is a change to whether published assets are marked at all.
+blind-watermark==0.4.4
