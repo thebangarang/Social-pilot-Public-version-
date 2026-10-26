@@ -2,9 +2,19 @@
 from types import SimpleNamespace
 
 import httpx
+import pytest
 
+from app.config import settings
 from app.platforms.tiktok import TikTokAdapter
 from app.security import encrypt_secret
+
+#: Les deux routes OAuth répondent 503 tant qu'aucun identifiant TikTok n'est configuré — c'est le comportement
+#: voulu, pas une panne. Sans ce marqueur, un clone frais du dépôt public échoue sur deux tests et laisse croire
+#: que la suite est cassée.
+requires_tiktok = pytest.mark.skipif(
+    not (settings.tiktok_client_key and settings.tiktok_client_secret),
+    reason="identifiants TikTok absents (.env) — la route répond 503 par conception",
+)
 
 
 class _FakeResp:
@@ -71,6 +81,7 @@ def test_tiktok_adapter_publish_idempotent_retry():
     assert url == "https://www.tiktok.com/@dummy/video/v_pub_123"
 
 
+@requires_tiktok
 def test_tiktok_authorize_redirects(client):
     r = client.get("/oauth/tiktok/authorize", follow_redirects=False)
     assert r.status_code == 302
@@ -78,6 +89,7 @@ def test_tiktok_authorize_redirects(client):
     assert "video.publish" in r.headers["location"]
 
 
+@requires_tiktok
 def test_tiktok_callback_rejects_bad_state(client):
     r = client.get("/oauth/callback/tiktok", params={"code": "x", "state": "wrong"})
     assert r.status_code == 400

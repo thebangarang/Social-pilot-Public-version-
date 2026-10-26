@@ -2,7 +2,7 @@
 
 > **EN —** A whitelabel, self-hosted platform for social-media production: an LLM-driven "team" proposes posts,
 > community replies and performance views; **the human validates every step**. FastAPI + SQLAlchemy, 95 routes,
-> 44 test files, **322 tests passing**. **Built by directing an AI coding agent — architecture, design and review
+> 44 test files, **322 tests** (320 green on a clone without `.env`, 2 skipped). **Built by directing an AI coding agent — architecture, design and review
 > by me.** Published as a portfolio demonstration, not a commercial product.
 
 Plateforme **whitelabel**, **self-hosted** (une instance par client, sur son propre serveur), qui centralise la
@@ -22,8 +22,9 @@ exception.**
 | **Community manager** | boîte des commentaires, classification vert / orange / rouge, réponses générées puis validées, lot réparti dans le temps |
 | **Réglages** | connexion des réseaux (OAuth), fournisseur de modèle (OpenRouter, compatible OpenAI, Ollama local ou distant), budget et consommation, utilisateurs, 2FA, thème |
 
-**Chiffres mesurés** : 54 fichiers applicatifs, **95 routes HTTP**, 44 fichiers de test, **322 tests au vert**
-(`pytest`, 3 min 15), 7 plateformes branchées.
+**Chiffres mesurés** : 54 fichiers applicatifs, **95 routes HTTP**, 44 fichiers de test, **322 tests** — 320 au
+vert et 2 marqués `skip` sur un clone sans `.env`, parce qu'ils exigent des identifiants TikTok (la route répond
+503 par conception, ce n'est pas une panne). Suite complète en 3 min 06. 7 plateformes branchées.
 
 ## Comment ce dépôt a été construit — à lire avant de juger le code
 
