@@ -3,7 +3,10 @@ PY := .venv/bin/python
 UV := uv
 APP := $(notdir $(CURDIR))
 
-.PHONY: help setup venv deps env db dev test admin freeze devnet-up devnet-down devnet-logs devnet-verify release-status
+.PHONY: help demo setup venv deps env db dev test admin freeze devnet-up devnet-down devnet-logs devnet-verify release-status
+
+demo: setup
+	@$(PY) scripts/demo_setup.py
 
 help:
 	@echo "make setup   - venv + deps + .env + DB schema"
@@ -14,6 +17,7 @@ help:
 	@echo "make dev     - run uvicorn reload on 127.0.0.1:8100"
 	@echo "make test    - run pytest"
 	@echo "make admin   - create an admin user (interactive)"
+	@echo "make demo    - setup + mode démo (aucune clé, aucun réseau)"
 	@echo "make freeze  - pin deps into requirements.txt"
 	@echo ""
 	@echo "devnet ring (see docs/devnet.md, the internal release doc):"

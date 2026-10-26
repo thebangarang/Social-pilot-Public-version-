@@ -24,5 +24,14 @@ _ADAPTERS = {
 
 
 def get_adapter(platform: str):
-    """Return the adapter for a platform (real driver if present, else mock)."""
+    """Return the adapter for a platform (real driver if present, else mock).
+
+    En mode démo, toutes les plateformes passent par l'adaptateur factice : le produit se visite
+    alors sans aucune app développeur et sans un seul compte réseau réel, ce qui est exactement ce
+    qu'une démonstration doit permettre.
+    """
+    from app.llm import is_demo_mode
+
+    if is_demo_mode():
+        return MockAdapter()
     return _ADAPTERS.get(platform, MockAdapter())

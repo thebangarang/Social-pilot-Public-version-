@@ -9,6 +9,9 @@ Plateforme **whitelabel**, **self-hosted** (une instance par client, sur son pro
 **production de posts**, le **pilotage de la communauté** et le **suivi de performance** sur TikTok, Instagram,
 LinkedIn, Facebook, Threads, Bluesky et Pinterest.
 
+**[La visite en images, écran par écran →](docs/screens.md)** — quatre captures, une phrase chacune, toutes prises
+en mode démo.
+
 L'utilisateur s'adresse à une « équipe » virtuelle (SEO, graphiste, monteur, marketing, growth, community manager)
 pilotée par un modèle, puis garde le contrôle final : **l'agent propose, l'humain valide — à chaque étape, sans
 exception.**
@@ -54,10 +57,37 @@ vendre ni une promesse de support.
 ```bash
 python3 -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env          # puis renseigner les clés
-make dev                      # uvicorn sur 127.0.0.1:8100
-make test                     # 322 tests
+cp .env.example .env
+make demo                     # base + mode démo + compte de démonstration
+make dev                      # http://127.0.0.1:8100
 ```
+
+`make demo` affiche l'e-mail et le mot de passe du compte de démonstration.
+
+## Mode démo — le parcours complet, sans une seule clé
+
+Sans clé d'API et sans aucun compte réseau, **le produit se visite de bout en bout** :
+
+| ce qui est simulé | comment, et pourquoi c'est visible |
+|---|---|
+| génération de texte | un fournisseur `demo` rend des propositions déterministes, marquées `[démo]` |
+| génération d'image | une vignette est dessinée localement (Pillow), portant la mention « MODE DÉMO » |
+| tri des commentaires | vert / orange / rouge, déterministe, sans modèle |
+| publication | l'adaptateur factice rend un identifiant et une URL `mock.*` — rien ne part sur un réseau |
+| performance | des métriques fabriquées localement, déterministes, croissantes avec le temps |
+
+Le mode démo se lit dans les Réglages comme fournisseur `demo` : il ne peut pas être confondu avec une vraie
+génération, ni présenté comme telle. Pour repasser en réel : choisir un fournisseur dans les Réglages et
+renseigner une clé.
+
+Vérification du mode démo, hors interface :
+
+```bash
+.venv/bin/python scripts/verify_demo_mode.py
+```
+
+Ce script appelle les mêmes fonctions que l'application — parseur de propositions, génération d'image, tri des
+commentaires, adaptateur de publication — et échoue si l'une des cinq étapes casse ou si un appel réseau part.
 
 Aucune donnée client, aucun secret, aucune adresse d'infrastructure ne figure dans ce dépôt. Les médias, les
 sauvegardes et les bases ont été retirés de cette copie et sont exclus par `.gitignore`.

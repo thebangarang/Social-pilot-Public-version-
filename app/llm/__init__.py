@@ -5,10 +5,12 @@ needs provider constants, default base URLs, and `test_connection()` for the
 Settings "Tester" button.
 """
 import base64
+import hashlib
+import json
 
 import httpx
 
-PROVIDERS = ["openrouter", "openai_compatible", "ollama", "none"]
+PROVIDERS = ["openrouter", "openai_compatible", "ollama", "none", "demo"]
 
 DEFAULT_BASE_URLS = {
     "openrouter": "https://openrouter.ai/api/v1",
@@ -52,6 +54,141 @@ def _provider_cost(usage: dict | None) -> float | None:
     if not isinstance(usage, dict) or usage.get("cost") is None:
         return None
     return _usage_cost(usage)
+
+
+
+# --- Mode démo -------------------------------------------------------------------------------------
+# Aucun réseau, aucune clé, aucune donnée réelle. Le fournisseur « demo » rend des réponses
+# déterministes, construites à partir de la demande de l'utilisateur, pour faire visiter le parcours
+# complet — génération, tri des commentaires, brouillon de réponse — sans fournisseur de modèle.
+# Ce n'est pas un faux produit : c'est un mode explicite, visible dans les réglages, qui ne peut pas
+# se confondre avec une vraie génération.
+
+DEMO_PLATFORMS = ("tiktok", "instagram", "linkedin", "facebook", "threads", "bluesky", "pinterest", "x")
+
+_DEMO_CONCEPTS = (
+    "Le geste quotidien qui change tout, montré en trois secondes.",
+    "L'envers du décor : ce que personne ne filme jamais.",
+    "Une preuve, pas une promesse : le résultat avant / après.",
+)
+
+
+def _demo_last_user(messages: list[dict]) -> str:
+    for message in reversed(messages or []):
+        if message.get("role") == "user":
+            return str(message.get("content") or "")
+    return ""
+
+
+def _demo_all_text(messages: list[dict]) -> str:
+    return "\n".join(str(m.get("content") or "") for m in (messages or []))
+
+
+def _demo_is_classification(text: str) -> bool:
+    return "green" in text and "orange" in text and "red" in text and "JSON" in text
+
+
+def _demo_is_generation(text: str) -> bool:
+    return '"proposals"' in text or "JSON valide" in text or '"variants"' in text
+
+
+def demo_completion(messages: list[dict], model: str = "demo-text") -> dict:
+    """La réponse d'un fournisseur absent : déterministe, honnête, jamais une imitation de modèle.
+
+    Trois formes, selon ce que le code appelant attend : une liste de propositions (l'agent de
+    génération), un tableau de niveaux (le tri des commentaires), ou un brouillon de réponse.
+    """
+    tout = _demo_all_text(messages)
+    demande = _demo_last_user(messages).strip()
+    graine = int(hashlib.sha256(demande.encode("utf-8")).hexdigest()[:8], 16)
+
+    if _demo_is_classification(tout):
+        # Une étiquette par commentaire numéroté dans la demande, dans l'ordre.
+        import re as _re
+        nombre = len(_re.findall(r"^\s*\d+\.\s", demande, flags=_re.MULTILINE)) or 1
+        cycle = ("green", "orange", "red")
+        content = json.dumps([cycle[i % 3] for i in range(nombre)])
+    elif _demo_is_generation(tout):
+        sujet = demande[:160] or "un post de démonstration"
+        propositions = []
+        for i in range(3):
+            concept = _DEMO_CONCEPTS[(graine + i) % len(_DEMO_CONCEPTS)]
+            variants = {}
+            for plateforme in DEMO_PLATFORMS:
+                variants[plateforme] = {
+                    "caption": f"[démo] {concept} — {sujet}",
+                    "hook": f"[démo] {concept}",
+                    "cta": "Dites-moi ce que vous en pensez.",
+                    "hashtags": ["#demo", "#socialpilot"],
+                    "media_format": "9:16" if plateforme in ("tiktok", "instagram") else "1:1",
+                }
+            propositions.append({
+                "number": i + 1,
+                "concept": concept,
+                "media_prompt": ("A simple flat illustration representing the idea, clean composition, "
+                                 "soft natural light, coherent palette, no text"),
+                "media_prompt_fr": "Une illustration plate et simple représentant l'idée, composition nette.",
+                "style_notes": "[démo] Direction artistique simulée, aucun appel de modèle.",
+                "variants": variants,
+            })
+        content = json.dumps({"proposals": propositions})
+    else:
+        niveau = "positif" if graine % 3 == 0 else ("question" if graine % 3 == 1 else "plainte")
+        content = (f"[démo] Merci pour votre message — il est bien arrivé et il sera traité. "
+                   f"(Réponse simulée : aucun modèle n'est appelé en mode démo.)")
+    return {"content": content, "model": model, "provider": "demo",
+            "tokens": {"prompt": 0, "completion": 0, "total": 0}}
+
+
+def is_demo_mode() -> bool:
+    """Le mode démo est actif quand le fournisseur de modèle est « demo ».
+
+    Lu en base plutôt que dans l'environnement : c'est le même réglage que celui affiché dans les
+    Réglages, donc un seul endroit à changer, et aucune divergence possible entre ce que l'écran dit
+    et ce que le code fait. Une base absente ou vide vaut « pas en démo ».
+    """
+    try:
+        from sqlalchemy import select
+
+        from app.database import SessionLocal
+        from app.models import LLMSetting
+
+        db = SessionLocal()
+        try:
+            reglage = db.scalar(select(LLMSetting).limit(1))
+        finally:
+            db.close()
+        return bool(reglage is not None and reglage.provider == "demo")
+    except Exception:  # noqa: BLE001 — pas de base, pas de démo
+        return False
+
+
+def demo_image(prompt: str, size: str | None = None) -> bytes:
+    """Une vignette générée localement (Pillow), pour que le parcours visuel tienne sans réseau."""
+    from io import BytesIO
+
+    from PIL import Image, ImageDraw
+
+    largeur = hauteur = 1024
+    if size and "x" in size:
+        try:
+            largeur, hauteur = (int(v) for v in size.lower().split("x", 1))
+        except ValueError:
+            largeur = hauteur = 1024
+    largeur, hauteur = max(256, min(largeur, 1024)), max(256, min(hauteur, 1024))
+
+    image = Image.new("RGB", (largeur, hauteur), (18, 22, 33))
+    dessin = ImageDraw.Draw(image)
+    for y in range(hauteur):
+        teinte = int(18 + 52 * (y / max(hauteur - 1, 1)))
+        dessin.line([(0, y), (largeur, y)], fill=(teinte, teinte + 6, teinte + 20))
+    dessin.rectangle([24, 24, largeur - 24, hauteur - 24], outline=(90, 140, 220), width=3)
+    mention = "[MODE DÉMO] image générée localement, aucun modèle appelé"
+    dessin.text((40, hauteur - 70), mention, fill=(200, 210, 230))
+    dessin.text((40, 40), (prompt or "")[:90], fill=(235, 240, 250))
+    flux = BytesIO()
+    image.save(flux, format="PNG")
+    return flux.getvalue()
 
 
 def resolve_model(setting, task: str = "text") -> str:
@@ -131,6 +268,8 @@ def test_connection(provider: str, base_url: str, api_key: str | None, *,
     """
     if provider == "none":
         return False, "Aucun fournisseur configuré."
+    if provider == "demo":
+        return True, "Mode démo : aucun appel réseau, aucune clé."
     url = (base_url or DEFAULT_BASE_URLS.get(provider, "")).rstrip("/")
     if not url:
         return False, "Base URL manquante."
@@ -176,6 +315,9 @@ def list_models(provider: str, base_url: str, api_key: str | None, modality: str
     """
     if provider == "none":
         return []
+    if provider == "demo":
+        return [{"id": "demo-text", "name": "Démo — texte"},
+                {"id": "demo-image", "name": "Démo — image"}]
     url = (base_url or DEFAULT_BASE_URLS.get(provider, "")).rstrip("/")
     if not url:
         return []
@@ -256,6 +398,8 @@ def chat_completion(
         db.close()
     if setting is None or setting.provider == "none":
         raise RuntimeError("Aucun fournisseur LLM configuré (voir Settings).")
+    if setting.provider == "demo":
+        return demo_completion(messages, model or "demo-text")
     base_url = (setting.base_url or DEFAULT_BASE_URLS.get(setting.provider, "")).rstrip("/")
     if not base_url:
         raise RuntimeError("Base URL manquante (voir Settings).")
@@ -419,6 +563,8 @@ def image_generation(prompt: str, model: str | None = None, reference_images: li
         db.close()
     if setting is None or setting.provider == "none":
         raise RuntimeError("Aucun fournisseur LLM configuré (voir Settings).")
+    if setting.provider == "demo":
+        return demo_image(prompt, size)
     base_url = (setting.base_url or DEFAULT_BASE_URLS.get(setting.provider, "")).rstrip("/")
     if not base_url:
         raise RuntimeError("Base URL manquante (voir Settings).")
