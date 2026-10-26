@@ -9,8 +9,7 @@ Plateforme **whitelabel**, **self-hosted** (une instance par client, sur son pro
 **production de posts**, le **pilotage de la communauté** et le **suivi de performance** sur TikTok, Instagram,
 LinkedIn, Facebook, Threads, Bluesky et Pinterest.
 
-**[La visite en images, écran par écran →](docs/screens.md)** — quatre captures, une phrase chacune, toutes prises
-en mode démo.
+**[La visite en images, écran par écran →](docs/screens.md)** — cinq captures, une phrase chacune.
 
 L'utilisateur s'adresse à une « équipe » virtuelle (SEO, graphiste, monteur, marketing, growth, community manager)
 pilotée par un modèle, puis garde le contrôle final : **l'agent propose, l'humain valide — à chaque étape, sans

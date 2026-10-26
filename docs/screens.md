@@ -1,6 +1,6 @@
 # La visite en images
 
-Quatre écrans, une phrase chacun — les deux écrans de réglages restent à produire (§ final). Tout ce qui est affiché provient du **mode démo** : aucune donnée client,
+Cinq écrans, une phrase chacun. Le sixième — le panneau administrateur — est expliqué plus bas : il reste à refaire en mode démo. Tout ce qui est affiché provient du **mode démo** : aucune donnée client,
 aucun compte réseau réel, aucun appel de modèle. Les textes marqués `[démo]` sont produits localement.
 
 ---
@@ -36,7 +36,26 @@ Boîte des commentaires, chaque message classé **vert** (positif), **orange** (
 urgence, sujet sensible). La réponse proposée est un brouillon : elle n'est publiée qu'après validation humaine,
 et le tri lui-même est un appel au modèle — en mode démo, une réponse déterministe et marquée `[démo]`.
 
-## Les deux écrans de réglages — à refaire avant publication
+## 5 · Réglages
+
+![Réglages](screens/05-settings.png)
+
+Langue, marques, réseaux connectés, sécurité du compte, thème, consommation mensuelle. La colonne « Account »
+montre des comptes factices (`socialpilotdummy…`) : aucune adresse, aucun nom de personne, aucun identifiant réel.
+C'est ici qu'on branche — ou qu'on ne branche pas — un fournisseur de modèle : un réglage, pas une constante dans
+le code.
+
+## L'écran administrateur — à refaire en mode démo
+
+Cette capture existe (fournisseur, modèles par usage, plafond mensuel, consommation ligne par ligne, tableau des
+utilisateurs) mais **elle n'a pas été publiée**, et le motif est précis : le champ « API key » y laisse voir le
+début d'une clé réelle (`sk-…`). Recadrer n'a pas suffi — le masque posé à l'aveugle est passé à côté du champ.
+
+À refaire en mode démo, où le fournisseur affiché est `demo`, sans clé du tout :
+
+1. `make demo` puis `make dev`, se connecter avec le compte affiché par `make demo` ;
+2. Réglages → panneau administrateur → capturer ;
+3. déposer en `docs/screens/06-settings-admin.png` et retirer cette section.
 
 Les captures des Réglages n'ont pas été publiées : elles contiennent un tableau d'utilisateurs, et rien ne permet
 de garantir qu'aucune adresse réelle n'y figure. Le contrôle automatique refuse même de la transcrire — ce qui
